@@ -7,10 +7,14 @@ import androidx.core.view.isVisible
 import com.example.network.R
 import com.example.network.databinding.ActivityCreatePostBinding
 import com.example.network.model.PostModel
+import com.example.network.network.retrofit.Network
 import com.example.network.network.volley.VolleyHandler
 import com.example.volley.network.volley.VolleyHttp
 import kotlinx.coroutines.runBlocking
 import org.greenrobot.eventbus.EventBus
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 class CreatePostActivity : AppCompatActivity() {
     private lateinit var binding: ActivityCreatePostBinding
@@ -22,34 +26,63 @@ class CreatePostActivity : AppCompatActivity() {
     }
 
     private fun initViews() {
-        val post=PostModel(binding.body.text.toString(),1,binding.title.text.toString(),100)
+        val post = PostModel(binding.body.text.toString(), 1, binding.title.text.toString(), 100)
         binding.addPost.setOnClickListener {
-            if (binding.title.text.toString().trim().isEmpty() || binding.body.text.toString().trim().isEmpty()) {
-                Toast.makeText(this, "Yuqoridagi maydonlarni to'liq to'ldiring", Toast.LENGTH_SHORT).show()
+            if (binding.title.text.toString().trim().isEmpty() || binding.body.text.toString()
+                    .trim().isEmpty()
+            ) {
+                Toast.makeText(this, "Yuqoridagi maydonlarni to'liq to'ldiring", Toast.LENGTH_SHORT)
+                    .show()
                 return@setOnClickListener
             }
-                createPost(post)
+            createList(post)
 
         }
     }
+
     private fun createPost(post: PostModel) {
-        binding.progress.isVisible=true
-        binding.linear.isVisible=false
+        binding.progress.isVisible = true
+        binding.linear.isVisible = false
         VolleyHttp().post(
             VolleyHttp().server(VolleyHttp().API_CREATE_POST),
             VolleyHttp().createList(post),
             object : VolleyHandler {
                 override fun onSuccess(response: String?) {
                     binding.progress.isVisible = false
-                    Toast.makeText(this@CreatePostActivity, "Success create post", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        this@CreatePostActivity,
+                        "Success create post",
+                        Toast.LENGTH_SHORT
+                    ).show()
                     EventBus.getDefault().post(post)
                 }
+
                 override fun onError(error: String?) {
                     binding.progress.isVisible = false
-
-                    Toast.makeText(this@CreatePostActivity, "Error create post", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@CreatePostActivity, "Error create post", Toast.LENGTH_SHORT)
+                        .show()
                 }
             })
+        finish()
+    }
+
+    private fun createList(post: PostModel) {
+        binding.progress.isVisible = true
+        binding.linear.isVisible = false
+        Network.api.createPost(post).enqueue(object : Callback<PostModel> {
+            override fun onResponse(call: Call<PostModel>, response: Response<PostModel>) {
+                binding.progress.isVisible = false
+                Toast.makeText(this@CreatePostActivity, "Success create post", Toast.LENGTH_SHORT)
+                    .show()
+                EventBus.getDefault().post(post)
+            }
+
+            override fun onFailure(call: Call<PostModel>, t: Throwable) {
+                binding.progress.isVisible = false
+                Toast.makeText(this@CreatePostActivity, "Error create post", Toast.LENGTH_SHORT)
+                    .show()
+            }
+        })
         finish()
     }
 

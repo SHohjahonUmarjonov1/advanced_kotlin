@@ -10,11 +10,15 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.network.adapter.PostAdapter
 import com.example.network.databinding.ActivityMainBinding
 import com.example.network.model.PostModel
+import com.example.network.network.retrofit.Network
 import com.example.network.network.volley.VolleyHandler
 import com.example.volley.network.volley.VolleyHttp
 import com.google.gson.Gson
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 class MainActivity : AppCompatActivity() {
 
@@ -42,7 +46,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun initViews() {
         binding.progress.isVisible = true
-        getPost()
+        getList()
         binding.add.setOnClickListener {
             val intent = Intent(this, CreatePostActivity::class.java)
             startActivity(intent)
@@ -161,6 +165,74 @@ class MainActivity : AppCompatActivity() {
             })
     }
 
+    //Retrofit
+
+    fun getList() {
+        binding.progress.isVisible=true
+        Network.api.getPosts().enqueue(object :Callback<List<PostModel>>{
+            override fun onResponse(
+                call: Call<List<PostModel>>,
+                response: Response<List<PostModel>>
+            ) {
+                response.body()?.let { refreshAdapter(it.toTypedArray()) }
+                binding.progress.isVisible = false
+            }
+
+            override fun onFailure(call: Call<List<PostModel>>, t: Throwable) {
+                Toast.makeText(this@MainActivity, "Error List", Toast.LENGTH_SHORT).show()
+            }
+
+        })
+    }
+
+    fun getSingleList(post: PostModel) {
+        Network.api.getSinglePost(post.id).enqueue(object :Callback<PostModel>{
+            override fun onResponse(call: Call<PostModel>, response: Response<PostModel>) {
+
+            }
+
+            override fun onFailure(call: Call<PostModel>, t: Throwable) {
+
+            }
+        })
+    }
+
+    fun createList(post: PostModel) {
+        Network.api.createPost(post).enqueue(object :Callback<PostModel>{
+            override fun onResponse(call: Call<PostModel>, response: Response<PostModel>) {
+
+            }
+
+            override fun onFailure(call: Call<PostModel>, t: Throwable) {
+
+            }
+        })
+    }
+
+    fun updateList(post:PostModel) {
+        Network.api.updatePost(post).enqueue(object :Callback<PostModel>{
+            override fun onResponse(call: Call<PostModel>, response: Response<PostModel>) {
+
+            }
+
+            override fun onFailure(call: Call<PostModel>, t: Throwable) {
+
+            }
+        })
+    }
+
+    fun deleteList(post: PostModel) {
+        Network.api.deletePost(post.id).enqueue(object :Callback<PostModel>{
+            override fun onResponse(call: Call<PostModel>, response: Response<PostModel>) {
+
+            }
+
+            override fun onFailure(call: Call<PostModel>, t: Throwable) {
+
+            }
+        })
+    }
+
     override fun onDestroy() {
         super.onDestroy()
         if (EventBus.getDefault().isRegistered(this)) {
@@ -170,6 +242,6 @@ class MainActivity : AppCompatActivity() {
 
     @Subscribe
     fun getEventBus(post: PostModel) {
-        getPost()
+        getList()
     }
 }
