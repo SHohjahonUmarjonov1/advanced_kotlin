@@ -7,6 +7,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.network.R
 import com.example.network.adapter.PostAdapter
 import com.example.network.databinding.ActivityMainBinding
 import com.example.network.model.PostModel
@@ -64,16 +65,23 @@ class MainActivity : AppCompatActivity() {
     fun deleteDialog(post: PostModel) {
         val dialog = AlertDialog.Builder(binding.root.context)
             .setTitle("Dialog")
-            .setMessage("Do you want to delete this post?")
-            .setPositiveButton("Ok") { dialog, _ ->
+            .setMessage("Want to edit a post?")
+            .setPositiveButton("Delete") { dialog, _ ->
                 deletePost(post)
                 dialog.dismiss()
+            }
+            .setNeutralButton("Update") {dialog,_->
+                val intent=Intent(this@MainActivity,UpdateActivity::class.java)
+                val json=Gson().toJson(post)
+                intent.putExtra("post",json)
+                startActivity(intent)
             }
             .setNegativeButton("Cancel") { dialog, _ ->
                 dialog.dismiss()
             }
             .show()
     }
+
 
     //Volley
     fun getPost() {
